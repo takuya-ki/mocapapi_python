@@ -73,7 +73,7 @@ class MCPBase:
 - 执行其他指令
 - 停止采集
 
-![command_process](img\command_process.png)
+![command_process](img/command_process.png)
 
 ### 指令执行流程
 
@@ -84,11 +84,11 @@ class MCPBase:
 
 
 
-![command_process1](img\command_process1.png)
+![command_process1](img/command_process1.png)
 
 ### 校准流程
 
-![command_process2](img\command_process2.png)
+![command_process2](img/command_process2.png)
 
 ~~~python
 def handleRunning(self, commandRespond):
