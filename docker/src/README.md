@@ -1,98 +1,89 @@
-# PN-Link Python操作文档
+# PN-Link Python Operation Manual
 
-## 介绍
+## Introduction
 
-PN-Link是诺亦腾公司推出的全身有线惯性动作捕捉产品，身体上各个子节点的数据通过有线汇总到主节点（身体背部的一个设备），最后通过网络发送到上位机。
+PN-Link is a full-body wired inertial motion capture product launched by Noitom. Data from each sub-node on the body is aggregated to the main node (a device on the back) through wired connections and then sent to the host via the network.
 
-PN-Link与其他无线惯性动捕产品不同，它提供了一种新的连接模式（直连模式），使用者可以不用安装诺亦腾公司提供的上位机软件Axis Studio，而是通过mocapApi sdk直连PN-Link主节点，完成数据采集，人体姿态校准等操作。
+Unlike other wireless inertial motion capture products, PN-Link offers a new connection mode (Direct Connection Mode). Users can directly connect to the PN-Link main node via the MocapApi SDK without installing Noitom's host software Axis Studio to complete data acquisition and human body posture calibration operations.
 
-本工程演示了如何使用python调用MocapApi sdk直连PN-Link主节点，完成上述功能。
+This project demonstrates how to use Python to call the MocapApi SDK to directly connect to the PN-Link main node and complete the above functions.
 
-工程包含的文件列表：
+The project includes the following files:
 
-- mocap_api.py： mocapApi的python接口类
-- mocap_main_base.py：  调用 mocapApi 接口的实现基类 。
-- mocap_main.py：  从PN-Link获取数据,通过控制台交互完成相关指令功能。
-- mocap_main_robot_ros2.py： 从PN-Link获取数据，retargeting后通过ros2 发布订阅消息。
-- mocap_main_stickman_ros2.py: 从PN-Link获取数据, 通过ROS2 发布关节状态消息，并使用 TF（Transform）库来创建和可视化火柴人模型。
+- **mocap_api.py**: The Python interface class for MocapApi.
+- **mocap_main_base.py**: The base class for calling the MocapApi interface.
+- **mocap_main.py**: Acquires data from PN-Link and completes related command functions through console interaction.
+- **mocap_main_robot_ros2.py**: Acquires data from PN-Link, retargets it, and then publishes and subscribes to messages through ROS2.
+- **mocap_main_stickman_ros2.py**: Acquires data from PN-Link, publishes joint state messages through ROS2, and creates and visualizes a stickman model using the TF (Transform) library.
 
-> 其中，mocap_main.py，mocap_main_robot_ros2.py，mocap_main_stickman_ros2.py是三个独立启动app。后两者包含了mocap_main.py的功能，增加了基于ros2的发布不同订阅消息的功能。
+> Among them, mocap_main.py, mocap_main_robot_ros2.py, and mocap_main_stickman_ros2.py are three independent executable apps. The latter two include the functions of mocap_main.py and add the functionality of publishing different subscription messages based on ROS2.
 
-## 环境准备
+## Environment Preparation
 
-1. 安装 Python 3.x 及以上版本。
+1. Install Python 3.x or above.
+2. Install the required libraries: docutils, pynput.
+3. PN-Link Wired Kit.
+4. To run mocap_main_robot_ros2 and mocap_main_stickman_ros2, ensure that the ROS2 environment is installed.
 
-2. 安装所需库： docutils、pynput。
+## Network Configuration
 
-3. PN-Link 有线套装
+The PN-Link main node is configured with a fixed IP address: 10.42.0.202, and it listens on UDP port: 8080.
 
-5. 执行mocap_main_robot_ros2 和 mocap_main_stickman_ros2 确保已安装ROS2 环境。
+Therefore, the IP address of the machine running the current script must be set to the same subnet, such as 10.42.0.101.
 
-   
+The corresponding configuration code example is as follows:
 
-##  网络配置
-
-PN-Link主节点默认设置了固定IP：10.42.0.202，并监听UDP端口：8080
-
-因此需要将运行当前工程脚本的机器IP设置为同网段，如：10.42.0.101
-
-对应的设置代码示例如下：
+Python
 
 ```python
 class MCPBase:
     def __init__(self):
-        self.app = MCPApplication()  # 创建应用实例
-        settings = MCPSettings()  # 创建设置实例
+        self.app = MCPApplication()  # Create an application instance
+        settings = MCPSettings()  # Create a settings instance
         
-        # 配置 BVH 数据格式为二进制
+        # Configure BVH data format to binary
         settings.set_bvh_data(MCPBvhData.Binary)
-        # 启用 BVH 数据转换
+        # Enable BVH data transformation
         settings.set_bvh_transformation(MCPBvhDisplacement.Enable)
-        # 设置旋转顺序为 YZX
+        # Set rotation order to YZX
         settings.set_bvh_rotation(MCPBvhRotation.YZX)
-        # 配置 UDP 数据传输地址和端口
+        # Configure UDP data transmission address and port
         settings.SetSettingsUDPEx('10.42.0.101', 8002)
         settings.SetSettingsUDPServer('10.42.0.202', 8080)
         
-        # 将设置应用到应用实例并打开连接
+        # Apply settings to the application instance and open the connection
         self.app.set_settings(settings)
         self.app.open()
 ```
 
+## Commands
 
+### Command Execution Order
 
-
-
-## 指令
-
-### 指令执行顺序
-
-- 创建网络链接
-- 执行采集指令
-- 打印采集数据 
-- 执行其他指令
-- 停止采集
+- Establish network connection
+- Execute acquisition command
+- Print acquired data
+- Execute other commands
+- Stop acquisition
 
 ![command_process](img/command_process.png)
 
-### 指令执行流程
+### Command Execution Flow
 
-- 创建指令 
-- 执行指令 
-- 等待指令执行完成 
-- 销毁指令
-
-
+- Create command
+- Execute command
+- Wait for command execution to complete
+- Destroy command
 
 ![command_process1](img/command_process1.png)
 
-### 校准流程
+### Calibration Process
 
 ![command_process2](img/command_process2.png)
 
 ~~~python
 def handleRunning(self, commandRespond):
-        # 处理校准进度句柄
+        # Handle calibration progress
         _calibrateProgressHandle = MCPCommand().get_progress(commandRespond._commandHandle)
         progressHandle = MCPCalibrateMotionProgress(_calibrateProgressHandle)
         count = progressHandle.get_count_of_support_poses()
@@ -105,14 +96,14 @@ def handleRunning(self, commandRespond):
                 str_poses += ", "
         str_poses += " : "     
         
-        # 获取校准步骤和校准名称
+        # Get calibration step and pose name
         result_current_step, result_p_name = progressHandle.get_step_current_pose()
         if result_current_step == MCPCalibrateMotionProgressStep.CalibrateMotionProgressStep_Countdown:
-            # 获取校准倒计时
+            # Get calibration countdown
             result_countdown, result_p_name = progressHandle.get_countdown_current_pose()
             str_poses += (f"Calibration-({result_p_name})-Countdown {result_countdown}.")
         elif result_current_step == MCPCalibrateMotionProgressStep.CalibrateMotionProgressStep_Progress:
-            # 获取校准进度
+            # Get calibration progress
             result_progress, result_p_name = progressHandle.get_progress_current_pose()
             str_poses += (f"Calibration-({result_p_name})-Progress {result_progress}.")
         elif result_current_step == MCPCalibrateMotionProgressStep.CalibrateMotionProgressStep_Prepare:
@@ -123,46 +114,42 @@ def handleRunning(self, commandRespond):
         print(str_poses) 
 ~~~
 
+## Base Class (mocap_main_base.py)
 
+- The implementation class for calling the MocapApi interface.
 
-
-
-## 基类（mocap_main_base.py）
-
-- 调用 mocapApi 接口的实现类
-
-### 1. 初始化
+### 1. Initialization
 
 ```python
 class MCPBase:
     def __init__(self):
-        # 初始化当前命令和运行命令状态
-        self.current_command = -1  # 当前执行的命令
-        self.capture_key = False  # 捕获状态标识
-        self.connent_key = False  # 连接状态标识
-        self.app = MCPApplication()  # 创建应用实例
-        settings = MCPSettings()  # 创建设置实例
+        # Initialize current command and running command status
+        self.current_command = -1  # Current executing command
+        self.capture_key = False  # Capture status flag
+        self.connent_key = False  # Connection status flag
+        self.app = MCPApplication()  # Create an application instance
+        settings = MCPSettings()  # Create a settings instance
         
-        # 配置 BVH 数据格式为二进制
+        # Configure BVH data format to binary
         settings.set_bvh_data(MCPBvhData.Binary)
-        # 启用 BVH 数据转换
+        # Enable BVH data transformation
         settings.set_bvh_transformation(MCPBvhDisplacement.Enable)
-        # 设置旋转顺序为 YZX
+        # Set rotation order to YZX
         settings.set_bvh_rotation(MCPBvhRotation.YZX)
-        # 配置 UDP 数据传输地址和端口
+        # Configure UDP data transmission address and port
         settings.SetSettingsUDPEx('10.42.0.101', 8002)
         settings.SetSettingsUDPServer('10.42.0.202', 8080)
         
-        # 将设置应用到应用实例并打开连接
+        # Apply settings to the application instance and open the connection
         self.app.set_settings(settings)
         self.app.open()
 ```
 
-### 2. 获取当前命令标题
+### 2. Get Current Command Title
 
 ```python
     def get_current_command_title(self):
-        # 返回当前命令对应的标题
+        # Return the title corresponding to the current command
         if self.current_command == EMCPCommand.CommandStartCapture:
             return 'Start Capture'
         elif self.current_command == EMCPCommand.CommandStopCapture:
@@ -177,69 +164,69 @@ class MCPBase:
             return 'None'
 ```
 
-### 3. 检查当前命令
+### 3. Check Current Command
 
 ```python
     def check_current_command(self, running_command):
-        # 检查是否可以运行指定命令
+        # Check if the specified command can be executed
         if self.connent_key == False:
-            print('Link failure.')  # 打印未连接时的错误信息
+            print('Link failure.')  # Print error message when not connected
             return False
         elif self.current_command != -1:
-            # 如果有其他命令正在运行，禁止执行其他命令
+            # If another command is running, prohibit executing other commands
             print(f'Pending command {self.get_current_command_title()} is running.')
             return False
-        # 除了开始捕获命令外，其他命令需先开始捕获
+        # Except for the start capture command, all other commands require starting capture first
         elif self.capture_key == False and running_command != EMCPCommand.CommandStartCapture:
             print('Please start capture command first.')
             return False
         return True
 ```
 
-### 4. 执行命令
+### 4. Execute Command
 
 ```python
     def running_command(self, running_command):
-        # 执行指定命令
+        # Execute the specified command
         if self.check_current_command(running_command) == True:
-            self.app.queue_command(running_command)  # 执行命令
-            self.current_command = running_command  # 更新当前命令
+            self.app.queue_command(running_command)  # Execute the command
+            self.current_command = running_command  # Update the current command
 ```
 
-### 5. 处理通知事件
+### 5. Handle Notification Events
 
 ```python
     def handleNotify(self, notifyData):
-        # 处理通知事件
+        # Handle notification events
         if notifyData._notify == MCPEventNotify.Notify_SystemUpdated:
-            mcpSystem = MCPSystem(notifyData._notifyHandle)  # 获取系统信息
+            mcpSystem = MCPSystem(notifyData._notifyHandle)  # Get system information
             print(f'MasterInfo : ( Version : {mcpSystem.get_master_version()}, SerialNumber : {mcpSystem.get_master_serial_number()} )')
 ```
 
-### 6. 处理命令结果
+### 6. Handle Command Results
 
 ```python
     def handleResult(self, commandRespond):
-        # 处理命令结果
+        # Handle command results
         command = MCPCommand()
         _commandHandle = commandRespond._commandHandle
         ret_code = command.get_result_code(_commandHandle)
         if ret_code != 0:
             ret_msg = command.get_result_message(_commandHandle)
-            print(f'ResultCode: {self.get_current_command_title()}, ResultMessage: {ret_msg}')  # 打印命令执行错误信息
+            print(f'ResultCode: {self.get_current_command_title()}, ResultMessage: {ret_msg}')  # Print command execution error message
         else:
-            print(f'{self.get_current_command_title()} done.')  # 打印命令执行成功信息
+            print(f'{self.get_current_command_title()} done.')  # Print command execution success message
             if self.current_command == EMCPCommand.CommandStopCapture:
                 self.capture_key = False
-        command.destroy_command(_commandHandle)  # 销毁命令句柄
-        self.current_command = -1  # 重置当前命令
+        command.destroy_command(_commandHandle)  # Destroy the command handle
+        self.current_command = -1  # Reset the current command
 ```
 
-### 7. 处理校准命令
+### 7. Handle Calibration Commands
 
 ```python
     def handleRunning(self, commandRespond):
-        # 处理校准进度
+        # Handle calibration progress
         _calibrateProgressHandle = MCPCommand().get_progress(commandRespond._commandHandle)
         progressHandle = MCPCalibrateMotionProgress(_calibrateProgressHandle)
         count = progressHandle.get_count_of_support_poses()
@@ -252,14 +239,14 @@ class MCPBase:
                 str_poses += ", "
         str_poses += " : "     
         
-        # 获取校准步骤和校准名称
+        # Get calibration step and pose name
         result_current_step, result_p_name = progressHandle.get_step_current_pose()
         if result_current_step == MCPCalibrateMotionProgressStep.CalibrateMotionProgressStep_Countdown:
-            # 获取校准倒计时
+            # Get calibration countdown
             result_countdown, result_p_name = progressHandle.get_countdown_current_pose()
             str_poses += (f"Calibration-({result_p_name})-Countdown {result_countdown}.")
         elif result_current_step == MCPCalibrateMotionProgressStep.CalibrateMotionProgressStep_Progress:
-            # 获取校准进度
+            # Get calibration progress
             result_progress, result_p_name = progressHandle.get_progress_current_pose()
             str_poses += (f"Calibration-({result_p_name})-Progress {result_progress}.")
         elif result_current_step == MCPCalibrateMotionProgressStep.CalibrateMotionProgressStep_Prepare:
@@ -270,14 +257,14 @@ class MCPBase:
         print(str_poses)    
 ```
 
-### 8. 异步更新
+### 8. Asynchronous Update
 
 ```python
     async def update(self):
         try: 
-            # 异步更新函数，用于处理事件循环
+            # Asynchronous update function for event loop processing
             while True:
-                evts = self.app.poll_next_event()  # 获取下一个事件
+                evts = self.app.poll_next_event()  # Get the next event
                 for evt in evts:
                     self.connent_key = True
                     if evt.event_type == MCPEventType.AvatarUpdated:
@@ -295,20 +282,20 @@ class MCPBase:
                             self.handleResult(evt.event_data.commandRespond)
                     elif evt.event_type == MCPEventType.RigidBodyUpdated:
                         print('rigid body updated')
-                await asyncio.sleep(0.1)  # 等待 0.1 秒
+                await asyncio.sleep(0.1)  # Wait for 0.1 seconds
         except Exception as e:
             print(f"An error occurred: {e}")    
 ```
 
-### 9. 主异步函数
+### 9. Main Asynchronous Function
 
 ```python
     async def main_async(self):
-        # 主异步函数
+        # Main asynchronous function
         main = self
         loop = asyncio.get_event_loop()
 
-        # 键盘事件处理函数
+        # Keyboard event handler
         def on_key_press(key):
             try:
                 key_name = key.char.lower()
@@ -326,20 +313,20 @@ class MCPBase:
             except AttributeError:
                 if key == key.esc:
                     print("ESC key pressed, exiting program")
-                    return False  # 退出监听器
+                    return False  # Exit the listener
 
-        # 启动键盘监听器
+        # Start the keyboard listener
         with Listener(on_press=on_key_press) as listener:
-            asyncio.run_coroutine_threadsafe(main.update(), loop)  # 启动事件更新
+            asyncio.run_coroutine_threadsafe(main.update(), loop)  # Start event update
             print("Press N to Start Capture, F to Stop Capture, C to calibrate, R to Resume Hands, V to Reset 0 Motion Drift, press ESC to exit program")
-            await loop.run_in_executor(None, listener.join)  # 等待监听器退出
+            await loop.run_in_executor(None, listener.join)  # Wait for the listener to exit
 ```
 
-## 处理PN-Link数据并打印（mocap_main.py）
+## Processing PN-Link Data and Printing (mocap_main.py)
 
-- 从PN-Link获取数据,并打印数据信息
+- Acquire data from PN-Link and print data information
 
-### 1. 初始化
+### 1. Initialization
 
 ```python
 class MCPMain(MCPBase):
@@ -347,26 +334,26 @@ class MCPMain(MCPBase):
         super().__init__()
 ```
 
-### 2. 处理PN-Link采集数据
+### 2. Processing PN-Link Acquisition Data
 
-- 获取PN-Link采集数据并打印
+- Acquire PN-Link data and print it
 
 ```python
     def handleAvatar(self, avatar_handle):
-        # 处理角色更新事件
-        avatar = MCPAvatar(avatar_handle)  # 获取角色数据
-        joints = avatar.get_joints()  # 获取所有关节数据
+        # Handle avatar update event
+        avatar = MCPAvatar(avatar_handle)  # Get avatar data
+        joints = avatar.get_joints()  # Get all joint data
         str_data = '{'
         for joint in joints:
-            link_name = joint.get_name()  # 获取关节名称
-            position = joint.get_local_position()  # 获取关节位置
-            rotation = joint.get_local_rotation()  # 获取关节旋转
+            link_name = joint.get_name()  # Get joint name
+            position = joint.get_local_position()  # Get joint position
+            rotation = joint.get_local_rotation()  # Get joint rotation
             str_data += f'{link_name} : {position}, {rotation}'
         str_data += '}'
-        print(f"links_data: {str_data}")  # 打印关节数据
+        print(f"links_data: {str_data}")  # Print joint data
 ```
 
-### 3. 主函数
+### 3. Main Function
 
 ```python
     def main(self):
@@ -376,11 +363,11 @@ if __name__ == '__main__':
     MCPMain().main()
 ```
 
-## ROS2 消息发布类（mocap_main_robot_ros2.py）
+## ROS2 Message Publishing Class (mocap_main_robot_ros2.py)
 
-- ROS2 URDF 启动和配置请参考链接： [GitHub - pnmocap/mocap_ros_urdf: This is a URDF (Unified Robot Description Format) project used to define the structure and joint information of robots.](https://github.com/pnmocap/mocap_ros_urdf)
+- ROS2 URDF setup and configuration can be referenced at: [GitHub - pnmocap/mocap_ros_urdf: This is a URDF (Unified Robot Description Format) project used to define the structure and joint information of robots.](https://github.com/pnmocap/mocap_ros_urdf)
 
-### 1. 初始化
+### 1. Initialization
 
 ```python
 class MCPMainRobotROS2(MCPBase):
@@ -391,35 +378,35 @@ class MCPMainRobotROS2(MCPBase):
         self.publisher = self.node.create_publisher(JointState, "/joint_states", 10)
         json_file_path = './retarget.json'
         self.robot = MCPRobot(open(json_file_path).read())
-        # 从 JSON 文件加载关节名称
+        # Load joint names from JSON file
         with open(json_file_path, 'r') as file:
             data = json.load(file)
         self.joint_names = data['urdfJointNames']  
 ```
 
-### 2. 处理PN-Link数据并发布 ROS2 消息
+### 2. Processing PN-Link Data and Publishing ROS2 Messages
 
 ```python
     def handleAvatar(self, avatar_handle):
         try:
-            # 处理角色更新事件
-            avatar = MCPAvatar(avatar_handle)  # 获取角色数据
+            # Handle avatar update event
+            avatar = MCPAvatar(avatar_handle)  # Get avatar data
             self.robot.update_robot(avatar)
             self.robot.run_robot_step()
             # print(robot.get_robot_ros_frame_json())
 
-            # 从机器人获取实时数据
+            # Get real-time data from the robot
             real_time_data = json.loads(self.robot.get_robot_ros_frame_json()[0])
 
-            # 创建 JointState 消息
+            # Create JointState message
             joint_state_msg = JointState()
             joint_state_msg.header.stamp = self.node.get_clock().now().to_msg()
             joint_state_msg.name = self.joint_names
 
-            # 初始化关节位置
+            # Initialize joint positions
             joint_positions = [0.0] * len(self.joint_names)
 
-            # 用实时数据填充关节位置
+            # Fill joint positions with real-time data
             for i, name in enumerate(self.joint_names):                    
                 if name in real_time_data['joint_positions']:
                     joint_positions[i] = real_time_data['joint_positions'][name]
@@ -433,23 +420,21 @@ class MCPMainRobotROS2(MCPBase):
             print(e)
 ```
 
-### 3. 主函数
+### 3. Main Function
 
 ```python
     def main(self):
         asyncio.run(self.main_async())
         
 if __name__ == '__main__':
-    MCPMainRobotROS2().main()  # 启动主程序
+    MCPMainRobotROS2().main()  # Start the main program
 ```
 
-## 通过 ROS2 TF 生成火柴人（mocap_main_stickman_ros2.py）
+## Generating Stickman through ROS2 TF (mocap_main_stickman_ros2.py)
 
-- ROS2 启动火柴人配置请参考链接： [GitHub - pnmocap/mocap_ros_urdf: This is a URDF (Unified Robot Description Format) project used to define the structure and joint information of robots.](https://github.com/pnmocap/mocap_ros_urdf)
+- ROS2 stickman setup and configuration can be referenced at: [GitHub - pnmocap/mocap_ros_urdf: This is a URDF (Unified Robot Description Format) project used to define the structure and joint information of robots.](https://github.com/pnmocap/mocap_ros_urdf)
 
-
-
-### 1. 初始化
+### 1. Initialization
 
 ```python
 class MCPMainStickmanROS2(MCPBase):
@@ -460,10 +445,10 @@ class MCPMainStickmanROS2(MCPBase):
         self.br = StaticTransformBroadcaster(self.node)  
 ```
 
-### 2. 定义每个关节的父子关系
+### 2. Defining Parent-Child Relationships for Each Joint
 
-~~~
-# 定义每个链接的父子关系
+```
+# Define parent-child relationships for each link
 links_parent = {
     "Hips": "world",
     "RightUpLeg": "Hips",
@@ -528,77 +513,74 @@ links_parent = {
     "LeftHandPinky2": "LeftHandPinky1",
     "LeftHandPinky3": "LeftHandPinky2"
 }
-~~~
+```
 
-
-
-### 3. 处理PN-Link数据并发布 ROS2 TF 消息
+### 3. Processing PN-Link Data and Publishing ROS2 TF Messages
 
 ```python
 def handleAvatar(self, avatar_handle):
         try:
-            # 处理角色更新事件
-            avatar = MCPAvatar(avatar_handle)  # 获取角色数据
+            # Handle avatar update event
+            avatar = MCPAvatar(avatar_handle)  # Get avatar data
 
-            # 获取所有关节数据
+            # Get all joint data
             joints = avatar.get_joints()
             for joint in joints:
-                link_name = joint.get_name()  # 获取关节名称
-                position = joint.get_local_position()  # 获取关节位置
-                rotation = joint.get_local_rotation()  # 获取关节旋转
+                link_name = joint.get_name()  # Get joint name
+                position = joint.get_local_position()  # Get joint position
+                rotation = joint.get_local_rotation()  # Get joint rotation
 
-                # 为每个关节创建并发送变换
+                # Create and send transforms for each joint
                 self.send_transform(link_name, position, rotation)
 
-            # Head1 的特殊处理
+            # Special handling for Head1
             rotation = (0.0, 0.0, 0.0, 1.0)
             position = (0.000000, 16.450001, 0.000000)
             self.send_transform('Head1', position, rotation)
 
-            # 左右脚趾的特殊处理
+            # Special handling for left and right toes
             position = (0.000000, -7.850000, 14.280000)
             self.send_transform('LeftTiptoe', position, rotation)
             self.send_transform('RightTiptoe', position, rotation)
 
-            # 处理机器人的根关节
+            # Handle the robot's root joint
             root_joint = avatar.get_root_joint()
             position = root_joint.get_local_position()
             rotation = root_joint.get_local_rotation()
 
-            # 发布根关节的变换
+            # Publish the root joint's transform
             self.send_transform('base_link', position, rotation, frame_id='world')
 
         except Exception as e:
-            print(f"处理角色时出错: {e}")
+            print(f"Error processing avatar: {e}")
 
     def send_transform(self, child_frame_id, position, rotation, frame_id=None):
         try:
             if frame_id is None:
-                frame_id = links_parent[child_frame_id]  # 获取父框架ID
+                frame_id = links_parent[child_frame_id]  # Get the parent frame ID
 
-            t = TransformStamped()  # 创建TF消息
-            t.header.stamp = self.node.get_clock().now().to_msg()  # 设置时间戳
-            t.header.frame_id = frame_id  # 设置父框架ID
-            t.child_frame_id = child_frame_id  # 设置子框架ID
+            t = TransformStamped()  # Create a TF message
+            t.header.stamp = self.node.get_clock().now().to_msg()  # Set the timestamp
+            t.header.frame_id = frame_id  # Set the parent frame ID
+            t.child_frame_id = child_frame_id  # Set the child frame ID
 
-            # 设置平移
+            # Set translation
             t.transform.translation.x = position[2] / 100
             t.transform.translation.y = position[0] / 100
             t.transform.translation.z = position[1] / 100
 
-            # 设置旋转
+            # Set rotation
             t.transform.rotation.x = rotation[3]
             t.transform.rotation.y = rotation[1]
             t.transform.rotation.z = rotation[2]
             t.transform.rotation.w = rotation[0]
 
-            self.br.sendTransform(t)  # 发送TF消息
+            self.br.sendTransform(t)  # Send the TF message
         except Exception as e:
              print(f"Error sending transform for {child_frame_id}: {e}")
-
 ```
 
-### 4. 主函数
+### 4. Main Function
 
 ```python
     def main(self):
@@ -607,4 +589,6 @@ def handleAvatar(self, avatar_handle):
 if __name__ == '__main__':
     MCPMainStickmanROS2().main()
 ```
+
+
 

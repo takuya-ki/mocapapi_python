@@ -1,0 +1,24 @@
+services:
+    pnmocap_python_ws:
+        build:
+            context: ./docker
+            dockerfile: Dockerfile
+            args:
+                MAKEFLAGS: -j4
+                PARALLELWORKERS: 4
+        container_name: pnmocap_python_container
+        environment:
+            # to transport X11 application window
+            - DISPLAY=$DISPLAY
+            - QT_X11_NO_MITSHM=1
+        volumes:
+            # for USB devices
+            - /dev:/dev
+            # to tansport X11 application (require xhost local:)
+            - /tmp/.X11-unix:/tmp/.X11-unix:rw
+            # shared dirs
+            - ./docker/src:/root/src
+        privileged: true
+        tty: true
+        network_mode: host
+        command: bash -c "bash"
