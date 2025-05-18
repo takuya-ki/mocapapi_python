@@ -64,4 +64,8 @@ RUN pip install docutils==0.21.2 pynput==1.8.1
 
 # Generates bash commands
 WORKDIR /root/src/
+RUN echo "ping 100.80.147.72" >> ~/.bash_history
+RUN echo "nc -zvu 100.80.147.72 7001" >> ~/.bash_history
+RUN echo "lsof -i UDP:7012" >> ~/.bash_history
+RUN echo "python3 mocap_to_stickman.py" >> ~/.bash_history
 RUN echo "python3 mocap_api.py" >> ~/.bash_history
