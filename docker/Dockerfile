@@ -46,12 +46,14 @@ RUN apt update -y && apt upgrade -y && apt install -y --no-install-recommends \
     texlive \
     libxcb* \
     dvipng \
+    netcat \
     unzip \
     gnupg \
     byobu \
     cmake \
     curl \
     wget \
+    lsof \
     dbus \
     git \
     vim \
@@ -62,4 +64,4 @@ RUN pip install docutils==0.21.2 pynput==1.8.1
 
 # Generates bash commands
 WORKDIR /root/src/
-RUN echo "python3 mocap_main.py" >> ~/.bash_history
+RUN echo "python3 mocap_api.py" >> ~/.bash_history

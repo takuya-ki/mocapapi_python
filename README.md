@@ -15,8 +15,16 @@
 
 ## Installation
 
-1. Setup the Axis Studio software by following [this](https://github.com/pnmocap/mocap_ros_py?tab=readme-ov-file#configure-the-motion-capture-software-axis-studio)
-2. Build the docker environment as below (if you use the docker, this must be set in docker container)  
+1. Connect the USB and LAN cables between the network hub and your Windows computer  
+    <img src=image/access_point.jpg width=280>  
+2. Set up the Axis Studio software by following [this](https://github.com/pnmocap/mocap_ros_py?tab=readme-ov-file#configure-the-motion-capture-software-axis-studio)  
+    1. Make sure the network settings are configured as shown below:  
+    <img src=image/network.png width=280>  
+    2. Enable the connection:  
+    <img src=image/setting.png width=280>  
+    3. Perform calibration so the system correctly recognizes joint angles:  
+    <img src=image/calibration.png width=280>  
+3. Build the Docker environment as shown below (if you are using Docker, this must be done inside the container):  
     ```bash
     git clone git@github.com:takuya-ki/mocapapi_python.git --recursive --depth 1 && cd mocapapi_python && COMPOSE_DOCKER_CLI_BUILD=1 DOCKER_BUILDKIT=1 docker compose build --no-cache --parallel  
     ```
@@ -34,5 +42,5 @@
     xhost + && docker exec -it pnmocap_python_container bash
     ```
     ```bash
-    python3 mocap_main.py
+    python3 mocap_api.py
     ```

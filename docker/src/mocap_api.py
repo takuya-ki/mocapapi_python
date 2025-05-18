@@ -1284,35 +1284,49 @@ class MCPApplication(object):
     if err != MCPError.NoError:
       raise RuntimeError('Can not get application system: {0}'.format(MCPError._fields[err]))
     return systemHandle
+
 def test_mocap_api():
   app = MCPApplication()
   settings = MCPSettings()
   settings.set_bvh_data(MCPBvhData.Binary)
   settings.set_bvh_transformation(MCPBvhDisplacement.Enable)
-  settings.set_bvh_rotation(MCPBvhRotation.YZX)
-  settings.SetSettingsUDPEx('10.42.0.101',8002)
-  settings.SetSettingsUDPServer('10.42.0.202',8080)
+  settings.set_bvh_rotation(MCPBvhRotation.XYZ)
+  settings.SetSettingsUDPEx('100.80.147.8', 7012)
+  settings.SetSettingsUDPServer('100.80.147.42', 7001)
   # settings.set_udp(7003)
   app.set_settings(settings)
   app.open()
   
-
   try:
     while True:
       evts = app.poll_next_event()
       for evt in evts:
+        print(f"[EVENT] type={evt.event_type}")
         if evt.event_type == MCPEventType.AvatarUpdated:
           avatar = MCPAvatar(evt.event_data.avatar_handle)
-          # robot.update_robot(avatar)
-          # robot.run_robot_step()
-          # print (robot.get_robot_ros_frame_json())
-          # print(avatar.get_index())
-          # print(avatar.get_name())
-          # print_joint(avatar.get_root_joint())
+          avatar = MCPAvatar(evt.event_data.avatar_handle)
+          print("[AvatarUpdated]")
+          print(f"  Index: {avatar.get_index()}")
+          print(f"  Name : {avatar.get_name()}")
+          
+          root_joint = avatar.get_root_joint()
+          print(f"  Root joint name: {root_joint.get_name()}")
+          print(f"  Root joint position: {root_joint.get_local_position()}")
+          print(f"  Root joint rotation: {root_joint.get_local_rotation()}")
+
+          for joint in avatar.get_joints():
+              print(f"Joint: {joint.get_name()} → Pos: {joint.get_local_position()}")
+
         elif evt.event_type == MCPEventType.RigidBodyUpdated:
-          print('rigid body updated')
+          print('Rigid body updated')
+        elif evt.event_type == MCPEventType.Error:
+          error_code = evt.event_data.error
+          print(f"[ERROR] Received error event: code = {error_code}, meaning = {MCPError._fields[error_code]}")
+        elif evt.event_type == MCPEventType.Notify:
+          notify_type = evt.event_data.notifyData._notify
+          print(f"[NOTIFY EVENT] Notify type = {notify_type} ({MCPEventNotify._fields[notify_type]})")
         else:
-          print('unknow event')
+          print(f"[UNKNOWN EVENT] event_type = {evt.event_type}")
 
       time.sleep(0.001)
   except Exception as e:
