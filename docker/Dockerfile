@@ -22,32 +22,22 @@ ENV TZ=Asia/Tokyo
 
 RUN apt update -y && apt upgrade -y && apt install -y --no-install-recommends \
     software-properties-common \
-    texlive-fonts-recommended \
-    texlive-latex-extra \
     iputils-ping net-tools \
     libxkbcommon-x11-0 \
-    gnome-screenshot \
-    libcanberra-gtk* \
     build-essential \
     libgl1-mesa-dev \
     lsb-release \
     libudev-dev \
-    imagemagick \
     python3-dev \
     python3-pip \
     python3-tk \
     mesa-utils \
     net-tools \
-    aptitude \
     xorg-dev \
     x11-apps \
     libfuse2 \
-    cm-super \
-    texlive \
     libxcb* \
-    dvipng \
     netcat \
-    unzip \
     gnupg \
     byobu \
     cmake \
