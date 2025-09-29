@@ -20,7 +20,7 @@
 2. Set up the communication rules by following these (in case of using Windows defender)
     1. Open wf.msc<br>
     <img src=image/wf.msc.png width=280><br>
-    2. Add inbound / outbound rules for 70001 and 70012<br>
+    2. Add inbound / outbound rules for 7001 and 7012<br>
     <img src=image/inbound_rule_step1.png width=280><br>
     <img src=image/inbound_rule_step2.png width=280><br>
     <img src=image/inbound_rule_step3.png width=280><br>
@@ -33,7 +33,8 @@
     <img src=image/setting.png width=280><br>
     3. Perform calibration so the system correctly recognizes joint angles:<br>
     <img src=image/calibration.png width=280><br>
-4. Build the Docker environment as shown below (if you are using Docker, this must be done inside the container):  
+4. Set the ip address 100.80.147.72 to your Ubuntu PC
+5. Build the Docker environment as shown below (if you are using Docker, this must be done inside the container):  
     ```bash
     nc -zvu 100.80.147.72 7001
     ```
