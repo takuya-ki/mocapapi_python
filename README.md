@@ -15,7 +15,7 @@
 
 ## Installation
 
-1. Connect the USB and LAN cables between the network hub and your Windows computer  
+1. Connect the USB between the pn studio hub and your Windows computer (if both of the computers are in the same LAN)   
     <img src=image/access_point.jpg width=280>  
 2. Set up the communication rules by following these (in case of using Windows defender)
     1. Open wf.msc<br>
@@ -33,10 +33,10 @@
     <img src=image/setting.png width=280><br>
     3. Perform calibration so the system correctly recognizes joint angles:<br>
     <img src=image/calibration.png width=280><br>
-4. Set the ip address 100.80.147.72 to your Ubuntu PC
+4. Set the ip address 100.80.147.8 to your Ubuntu PC
 5. Build the Docker environment as shown below (if you are using Docker, this must be done inside the container):  
     ```bash
-    nc -zvu 100.80.147.72 7001
+    nc -zvu 100.80.147.42 7001
     ```
     ```bash
     git clone git@github.com:takuya-ki/mocapapi_python.git --recursive --depth 1 && cd mocapapi_python && COMPOSE_DOCKER_CLI_BUILD=1 DOCKER_BUILDKIT=1 docker compose build --no-cache --parallel  
